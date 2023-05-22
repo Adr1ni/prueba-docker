@@ -1,0 +1,17 @@
+version: "3.2"
+app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/var/www/html/app
+    depends_on:
+      - db
+
+  db:
+    image: mongo:latest
+    volumes:
+      - "./docker/data/mongo:/data/db"
+      - "./docker/data/dump:/root/dump"
+    ports:
+      - "27017:27017"

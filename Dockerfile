@@ -1,14 +1,25 @@
 FROM php:8.1-fpm
 
-RUN apt-get update \
-    && apt-get -y install libzip-dev wget git unzip libpq-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev vim \
+MAINTAINER Abed Halawi <abed.halawi@vinelab.com>
 
-RUN docker-php-ext-install zip
+RUN apt-get update
+RUN apt-get install -y autoconf pkg-config libssl-dev
+RUN pecl install mongodb-1.13
+RUN docker-php-ext-install bcmath
+RUN echo "extension=mongodb.so" >> /usr/local/etc/php/conf.d/mongodb.ini
 
-RUN pecl install mongodb
-RUN docker-php-ext-enable mongodb
+# Install Laravel dependencies
+RUN apt-get install -y \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        libpng12-dev
 
-RUN chown -R www-data:www-data /var/www
+RUN docker-php-ext-install iconv mcrypt mbstring \
+    && docker-php-ext-install zip \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install gd
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-COPY ./docker/php/php.ini /usr/local/etc/php/php.ini
+WORKDIR /code
+
+COPY . /code
